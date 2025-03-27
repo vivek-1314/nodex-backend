@@ -4,11 +4,12 @@ const userroute = require('./routes/user')
 const searchroute = require('./routes/search_route') ;
 const postroute = require('./routes/post_routes') ;
 const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 const port = 3000;
 
-const url = "mongodb://127.0.0.1:27017/nodex" ;
+const url = process.env.MONGODBATLASURL ;
 connectiontomongodb(url);
 
 app.use(express.json());
