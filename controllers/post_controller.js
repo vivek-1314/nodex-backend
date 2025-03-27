@@ -1,16 +1,50 @@
 const postmodel = require('../models/post_model') ;
 const usermodel = require('../models/User_model') ;
 const admin = require('../firebaseadmin') ;
+const cloudinary = require("../cloudinary");
+const streamifier = require('streamifier');
+
 
 const createpost = async (req, res, next) => {
     try {
         const {title, content, tags } = req.body;
         const id = req.user.uid;
-        
-        if (!req.file) return res.status(400).json({ error: "Image is required" });
     
-        const imageUrl = `http://localhost:3000/uploads/${req.file.filename}`;
-        
+        let imageUrl = null;
+
+        if (req.file && req.file.buffer) {
+            try {
+                const streamUpload = () => {
+                    return new Promise((resolve, reject) => {
+                        const stream = cloudinary.uploader.upload_stream(
+                            {
+                                folder: "nodex_postimages",
+                                public_id: id,
+                                overwrite: true,
+                                resource_type: "image"
+                            },
+                            (error, result) => {
+                                if (result) {
+                                    resolve(result);
+                                } else {
+                                    reject(error);
+                                }
+                            }
+                        );
+                        streamifier.createReadStream(req.file.buffer).pipe(stream);
+                    });
+                };
+
+                const uploadResult = await streamUpload();
+                imageUrl = uploadResult.secure_url;
+
+            } catch (uploadError) {
+                console.error("Cloudinary Upload Error:", uploadError);
+            }
+        }
+
+
+        console.log("imageurl : " , imageUrl) ;
         const newPost = await postmodel.create({
                                                 firebaseUID: id,
                                                 title,
