@@ -78,7 +78,9 @@ const loginuser = async (req, res, next) => {
             if (hits.length) {
                 const oldId = hits[0].id;
                 await userIndex.deleteDocument(oldId);
-                const updatedUser = {
+            }
+
+            const updatedUser = {
                     id: uid.toString(),
                     name: existingUser.name,
                     email: existingUser.email,
@@ -90,7 +92,7 @@ const loginuser = async (req, res, next) => {
                 };
 
                 await userIndex.addDocuments([updatedUser]);
-            }
+            
 
             return res.status(200).json({
                 success: true,
